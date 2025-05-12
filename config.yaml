@@ -1,0 +1,5 @@
+locations:
+  home:
+    equipment: [bodyweight, pull-up bar, dumbbells, trx, chair, resistance band]
+  gym:
+    equipment: [bodyweight, pull-up bar, dumbbells, trx, box, kettlebell, parallel bars, resistance band]

@@ -1,0 +1,98 @@
+upper:
+  subcategories:
+    pull_vertical:
+      - name: Pull-Up
+        equipment: [pull-up bar]
+      - name: Chin-Up
+        equipment: [pull-up bar]
+      - name: Negative Pull-Up
+        equipment: [pull-up bar]
+      - name: Banded Pull-Up
+        equipment: [pull-up bar, resistance band]
+    pull_horizontal:
+      - name: Inverted Row
+        equipment: [parallel bars, trx]
+      - name: Dumbbell Row
+        equipment: [dumbbells]
+      - name: Kettlebell Row
+        equipment: [kettlebell]
+    push_vertical:
+      - name: Dumbbell Shoulder Press
+        equipment: [dumbbells]
+      - name: Arnold Press
+        equipment: [dumbbells]
+      - name: Pike Push-Up
+        equipment: [bodyweight]
+      - name: Lateral Raise
+        equipment: [dumbbells]
+      - name: Dips
+        equipment: [parallel bars]
+    push_horizontal:
+      - name: Push-Up
+        equipment: [bodyweight]
+      - name: Decline Push-Up
+        equipment: [bodyweight, box]
+      
+
+lower:
+  subcategories:
+    legs_anterior:
+      - name: Squat
+        equipment: [bodyweight, dumbbells, kettlebell]
+      - name: Step Ups
+        equipment: [bodyweight, dumbbells, kettlebell]
+      - name: Bulgarian Split Squat
+        equipment: [bodyweight, dumbbells, kettlebell]
+      - name: Goblet Squat
+        equipment: [dumbbells, kettlebell]
+      - name: Walking Lunge
+        equipment: [bodyweight]
+      - name: Wall Sit
+        equipment: [bodyweight]
+      - name: Dumbbell Lunge
+        equipment: [dumbbells]
+    legs_posterior:
+      - name: Romanian Deadlift
+        equipment: [dumbbells, kettlebell]
+      - name: Glute Bridge
+        equipment: [bodyweight, kettlebell]
+      - name: Glute Bridge (Single-Leg)
+        equipment: [bodyweight, kettlebell]
+      - name: Kettlebell Swing
+        equipment: [kettlebell]
+
+core:
+  subcategories:
+    core_extension:
+      - name: Superman
+        equipment: [bodyweight]
+      - name: Back Extension (no chão)
+        equipment: [bodyweight]
+      - name: Bird Dog
+        equipment: [bodyweight]
+    core_flexion:
+      - name: Hollow Body Hold
+        equipment: [bodyweight]
+      - name: Crunch
+        equipment: [bodyweight]
+      - name: Sit-Up
+        equipment: [bodyweight]
+      - name: Leg Raise
+        equipment: [bodyweight]
+      - name: Hanging Knee Raise
+        equipment: [pull-up bar]
+      - name: V-Up
+        equipment: [bodyweight]
+      - name: Weighted Sit-Up
+        equipment: [dumbbells]
+    core_lateral:
+      - name: Side Plank
+        equipment: [bodyweight]
+      - name: Russian Twist
+        equipment: [bodyweight]
+      - name: Dumbbell Side Bend
+        equipment: [dumbbells]
+      - name: Windshield Wiper
+        equipment: [bodyweight]
+      - name: Heel Toe Tap
+        equipment: [bodyweight]
