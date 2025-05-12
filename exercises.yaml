@@ -1,5 +1,6 @@
-upper:
-  subcategories:
+# Base exercises
+categories:
+  upper:
     pull_vertical:
       - name: Pull-Up
         equipment: [pull-up bar]
@@ -34,8 +35,7 @@ upper:
         equipment: [bodyweight, box]
       
 
-lower:
-  subcategories:
+  lower:
     legs_anterior:
       - name: Squat
         equipment: [bodyweight, dumbbells, kettlebell]
@@ -61,8 +61,7 @@ lower:
       - name: Kettlebell Swing
         equipment: [kettlebell]
 
-core:
-  subcategories:
+  core:
     core_extension:
       - name: Superman
         equipment: [bodyweight]
@@ -96,3 +95,19 @@ core:
         equipment: [bodyweight]
       - name: Heel Toe Tap
         equipment: [bodyweight]
+
+virtual_categories:
+  Full Body:
+    include_all_from: [upper, lower, core]
+  "Full Body (No Core)":
+    include_all_from: [upper, lower]
+  Upper:
+    include_groups: [pull_vertical, pull_horizontal, push_vertical, push_horizontal]
+  Lower:
+    include_groups: [legs_anterior, legs_posterior]
+  Push:
+    include_groups: [push_vertical, push_horizontal]
+  Pull:
+    include_groups: [pull_vertical, pull_horizontal]
+  Core:
+    include_all_from: [core]

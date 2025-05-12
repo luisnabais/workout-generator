@@ -1,115 +1,109 @@
 import yaml
 import random
 import questionary
+import os
 from config_manager import load_config
+
+DEBUG = os.getenv("DEBUG", "False").lower() in ("true", "1", "t")  # [1][2]
+
+def debug_print(*args, **kwargs):
+    if DEBUG:
+        print(*args, **kwargs)
 
 def load_exercises(filename):
     with open(filename, 'r') as file:
-        return yaml.safe_load(file)
+        data = yaml.safe_load(file)
+    return data
 
 def select_location(config):
     locations = config.get("locations", {})
     if not locations:
-        print("No location set. Please edit exercises.yaml and config.yaml to add locations and equipment.")
+        print("No locations defined. Add them in config.yaml.")
         exit(1)
-    print("Available locations:")
-    loc_list = list(locations.keys())
+    
     choice = questionary.select(
-        "Choose location:",
-        choices=[f"{loc} ({', '.join(locations[loc]['equipment'])})" for loc in loc_list]
+        "Select location:",
+        choices=[
+            f"{name} ({', '.join(data['equipment'])})"
+            for name, data in locations.items()
+        ]
     ).ask()
-    # Extract location name
-    selected_loc = choice.split(" (")[0]
-    return selected_loc, locations[selected_loc]['equipment']
-
-def list_categories(exercises):
-    # Original main categories from YAML
-    main_cats_from_yaml = list(exercises.keys())
-    
-    # Add virtual categories for full-body options
-    virtual_cats = ["Full Body", "Full Body (No Core)"]
-    main_cats = virtual_cats + main_cats_from_yaml
-    
-    # Subcategories remain the same (from YAML)
-    sub_cats = []
-    for main in main_cats_from_yaml:
-        sub_cats.extend([f"{main}:{sub}" for sub in exercises[main]['subcategories'].keys()])
-    
-    return main_cats, sub_cats
-
-
-def get_user_categories(main_cats, sub_cats):
-    choices = []
-    choices += [questionary.Choice(title=cat.title(), value=cat) for cat in main_cats]
-    for cat in sub_cats:
-        pretty = cat.split(":")[1].replace('_', ' ').title()
-        main = cat.split(":")[0].title()
-        choices.append(questionary.Choice(title=f"{pretty} ({main})", value=cat))
-    selected = questionary.checkbox(
-        "Select the categories for your workout:",
-        choices=choices
-    ).ask()
-    return selected
-
+    selected_name = choice.split(" (")[0]
+    return selected_name, locations[selected_name]["equipment"]
 
 def filter_exercises(exercises, available_equipment):
     filtered = {}
-    for main_cat, data in exercises.items():
-        filtered[main_cat] = {'subcategories': {}}
-        for sub_cat, ex_list in data['subcategories'].items():
-            valid_ex = []
-            for ex in ex_list:
-                if all(eq in available_equipment for eq in ex['equipment']):
-                    valid_ex.append(ex)
-            if valid_ex:
-                filtered[main_cat]['subcategories'][sub_cat] = valid_ex
+    for category, subs in exercises["categories"].items():
+        filtered[category] = {}
+        for sub, ex_list in subs.items():
+            valid = [
+                ex for ex in ex_list
+                if all(eq in available_equipment for eq in ex["equipment"])
+            ]
+            if valid:
+                filtered[category][sub] = valid
     return filtered
 
-def generate_workout(exercises, selected):
+def get_virtual_categories(data):
+    return list(data["virtual_categories"].keys())
+
+def generate_workout(filtered_exercises, virtual_cat_def, selected_cats):
     workout = {}
-    for sel in selected:
-        if sel == "Full Body":
-            # Include one exercise from EVERY subcategory (upper, lower, core)
-            for main_cat in ["upper", "lower", "core"]:
-                if main_cat in exercises:
-                    for sub_cat in exercises[main_cat]['subcategories']:
-                        ex = random.choice(exercises[main_cat]['subcategories'][sub_cat])
-                        workout[f"{main_cat}:{sub_cat}"] = ex
-        elif sel == "Full Body (No Core)":
-            # Include one exercise from EVERY subcategory (upper, lower only)
-            for main_cat in ["upper", "lower"]:
-                if main_cat in exercises:
-                    for sub_cat in exercises[main_cat]['subcategories']:
-                        ex = random.choice(exercises[main_cat]['subcategories'][sub_cat])
-                        workout[f"{main_cat}:{sub_cat}"] = ex
-        elif ':' in sel:
-            # Existing subcategory logic
-            main, sub = sel.split(':')
-            ex = random.choice(exercises[main]['subcategories'][sub])
-            workout[f"{main}:{sub}"] = ex
-        else:
-            # Existing main category logic
-            for sub in exercises[sel]['subcategories']:
-                ex = random.choice(exercises[sel]['subcategories'][sub])
-                workout[f"{sel}:{sub}"] = ex
+    
+    # First build group-to-base mapping dynamically
+    group_to_base = {}
+    for base_cat, subs in filtered_exercises.items():
+        for sub in subs.keys():
+            group_to_base[sub] = base_cat
+    
+    for cat in selected_cats:
+        config = virtual_cat_def[cat]
+        
+        if "include_all_from" in config:
+            # Handle categories like Full Body, Core
+            for base_cat in config["include_all_from"]:
+                if base_cat in filtered_exercises:
+                    for sub, ex_list in filtered_exercises[base_cat].items():
+                        if ex_list:
+                            workout[f"{base_cat}:{sub}"] = random.choice(ex_list)
+        
+        elif "include_groups" in config:
+            # Handle Upper, Lower, Push, Pull
+            for group in config["include_groups"]:
+                base_cat = group_to_base.get(group)
+                if not base_cat:
+                    continue  # Skip unrecognized groups
+                
+                if base_cat in filtered_exercises:
+                    ex_list = filtered_exercises[base_cat].get(group, [])
+                    if ex_list:
+                        workout[f"{base_cat}:{group}"] = random.choice(ex_list)
+    
     return workout
 
 
-def pretty_category(cat):
-    main, sub = cat.split(':')
-    return f"{main.title()} - {sub.replace('_', ' ').title()}"
-
 def main():
     config = load_config()
-    location, available_equipment = select_location(config)
-    exercises = load_exercises('exercises.yaml')
-    filtered_exercises = filter_exercises(exercises, available_equipment)
-    main_cats, sub_cats = list_categories(filtered_exercises)
-    selected = get_user_categories(main_cats, sub_cats)
-    workout = generate_workout(filtered_exercises, selected)
-    print(f"\nTreino para '{location}':")
-    for cat, ex in workout.items():
-        print(f"{pretty_category(cat)}: {ex['name']}")
+    location, equipment = select_location(config)
+    debug_print(f"\nAvailable equipment in {location}: {equipment}")
+
+    data = load_exercises("exercises.yaml")
+    filtered = filter_exercises(data, equipment)
+    debug_print("\nFiltered exercises structure:")
+    debug_print(yaml.dump(filtered))
+    
+    virtual_cats = data["virtual_categories"]
+    selected = questionary.checkbox(
+        "Select workout type(s):",
+        choices=list(virtual_cats.keys())
+    ).ask()
+    
+    workout = generate_workout(filtered, virtual_cats, selected)
+    
+    print(f"\nWorkout for {location}:")
+    for category, exercise in workout.items():
+        base, sub = category.split(":")
+        print(f"{base.title()} - {sub.replace('_', ' ').title()}: {exercise['name']}")
 
 if __name__ == "__main__":
     main()
